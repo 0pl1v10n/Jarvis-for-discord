@@ -1,0 +1,183 @@
+import discord
+from discord.ext import commands
+from discord import app_commands
+
+intents = discord.Intents.default()
+intents.guilds = True
+intents.members = True
+
+bot = commands.Bot(command_prefix="!", intents=intents)
+
+# ---------- Categories and Channels ----------
+categories_channels = {
+    "🛈 Info": [
+        {"name": "📜-rules", "private": False},
+        {"name": "📢-announcements", "private": False},
+        {"name": "👋-welcome", "private": False},
+        {"name": "💡-suggestions", "private": False},
+        {"name": "🖼️-profile-pictures", "private": False},
+        {"name": "🔒-verify", "private": False},  # Moved verify channel to Info category
+    ],
+    "💬 General": [
+        {"name": "💬-general", "private": False},
+        {"name": "🖼️-media", "private": False},
+        {"name": "😂-memes", "private": False},
+        {"name": "💥-staff-shitposts", "private": True},  # private
+        {"name": "🌐-multi-language", "private": False},
+    ],
+    "🎨 Creative": [{"name": "🎨-art", "private": False}],
+    "🎮 Gaming": [
+        {"name": "🎮-valorant", "private": False},
+        {"name": "🕹️-roblox", "private": False},
+        {"name": "⛏️-minecraft", "private": False},
+        {"name": "🎯-fortnite", "private": False},
+        {"name": "⚔️-marvel-rivals", "private": False},
+    ],
+    "🎵 Music": [{"name": "🎵-songs", "private": False}, {"name": "🎤-singing", "private": False}],
+    "🎬 Movies/Comics": [{"name": "🦸-marvel", "private": False}, {"name": "🦇-dc", "private": False}],
+    "📝 Study": [
+        {"name": "➗-math", "private": False},
+        {"name": "📚-english", "private": False},
+        {"name": "🔬-science", "private": False},
+        {"name": "💻-tech-chat", "private": False},
+        {"name": "📝-other-stuff", "private": False},
+        {"name": "🚨-sex-ed", "private": False},
+    ],
+    "🔊 Voice Channels": [
+        {"name": "🔊-general", "private": False},
+        {"name": "🔊-lobby", "private": False},
+        {"name": "🔊-afk", "private": False},
+        {"name": "🔊-music", "private": False},
+        {"name": "🔊-staff", "private": True},
+        {"name": "🔊-interviews", "private": True},
+        {"name": "🔊-moderator-only", "private": True},
+        {"name": "🔊-interviews-old", "private": True},
+        {"name": "🔊-staff-chat", "private": True},
+    ],
+}
+
+# ---------- Roles with unique colors and permissions ----------
+roles_info = [
+    ("👑 Owner", discord.Colour.from_rgb(255, 0, 0), True, discord.Permissions(administrator=True)),
+    ("🔥 Co-Owner", discord.Colour.from_rgb(255, 64, 0), True, discord.Permissions(administrator=True)),
+    ("⚡ Head Administrator", discord.Colour.from_rgb(255, 128, 0), True, discord.Permissions(kick_members=True, ban_members=True, manage_channels=True, manage_roles=True)),
+    ("🛡️ Admin", discord.Colour.from_rgb(255, 191, 0), True, discord.Permissions(kick_members=True, ban_members=True, mute_members=True, deafen_members=True)),
+    ("👑 Head Moderator", discord.Colour.from_rgb(255, 255, 0), True, discord.Permissions(mute_members=True, deafen_members=True, move_members=True)),
+    ("🧰 Moderator", discord.Colour.from_rgb(191, 255, 0), True, discord.Permissions(mute_members=True, deafen_members=True, move_members=True)),
+    ("👥 Members", discord.Colour.from_rgb(128, 255, 0), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💯 Level 100", discord.Colour.from_rgb(0, 255, 0), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🌟 Level 90", discord.Colour.from_rgb(0, 255, 128), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🔥 Level 80", discord.Colour.from_rgb(0, 255, 255), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💎 Level 70", discord.Colour.from_rgb(0, 128, 255), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🌈 Level 60", discord.Colour.from_rgb(0, 0, 255), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💠 Level 50", discord.Colour.from_rgb(128, 0, 255), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💜 Level 40", discord.Colour.from_rgb(191, 0, 255), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💖 Level 30", discord.Colour.from_rgb(255, 0, 255), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("✨ Level 20", discord.Colour.from_rgb(255, 0, 128), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🌸 Level 10", discord.Colour.from_rgb(255, 64, 128), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🌺 Level 5", discord.Colour.from_rgb(255, 128, 128), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("👤 Member", discord.Colour.from_rgb(128, 128, 128), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💞 Relationship", discord.Colour.from_rgb(255, 192, 203), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💍 Taken", discord.Colour.from_rgb(255, 105, 180), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💔 Single", discord.Colour.from_rgb(205, 92, 92), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🚫 Not interested", discord.Colour.from_rgb(139, 69, 19), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🎂 Age", discord.Colour.from_rgb(255, 215, 0), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🔞 18+", discord.Colour.from_rgb(0, 128, 0), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🔞 16-17", discord.Colour.from_rgb(34, 139, 34), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🔞 13-15", discord.Colour.from_rgb(0, 255, 127), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("📣 Pings", discord.Colour.from_rgb(255, 69, 0), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("💤 Dead chat ping", discord.Colour.from_rgb(255, 140, 0), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("📢 Announcement pings", discord.Colour.from_rgb(255, 215, 0), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🗳️ Poll ping", discord.Colour.from_rgb(173, 255, 47), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("🎮 Game night ping", discord.Colour.from_rgb(0, 206, 209), False, discord.Permissions(send_messages=True, view_channel=True)),
+    ("📺 Stream ping", discord.Colour.from_rgb(30, 144, 255), False, discord.Permissions(send_messages=True, view_channel=True)),
+]
+
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user}")
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synced {len(synced)} commands")
+    except Exception as e:
+        print(e)
+
+# ---------- Slash Command ----------
+@bot.tree.command(name="setup", description="Sets up the server safely, Community-mode compatible")
+@app_commands.default_permissions(administrator=True)
+async def setup(interaction: discord.Interaction):
+    await interaction.response.send_message("Setting up the server...", ephemeral=True)
+    guild = interaction.guild
+
+    # Detect Community system channels
+    rules_channel = guild.rules_channel
+    public_updates_channel = guild.public_updates_channel
+
+    # ---------- Create Roles ----------
+    for role_name, color, hoist, perms in roles_info:
+        existing_role = discord.utils.get(guild.roles, name=role_name)
+        if existing_role is None:
+            role = await guild.create_role(name=role_name, colour=color, hoist=hoist, permissions=perms)
+
+    # ---------- Create Categories and Channels ----------
+    for category_name, channels in categories_channels.items():
+        category = discord.utils.get(guild.categories, name=category_name)
+        if category is None:
+            category = await guild.create_category(category_name)
+
+        existing_channels = {ch.name.lower(): ch for ch in category.channels}
+
+        for channel in channels:
+            channel_name = channel["name"]
+            is_private = channel["private"]
+
+            # Skip Community system channels
+            if rules_channel and channel_name.lower().replace("📜-","") == rules_channel.name.lower():
+                continue
+            if public_updates_channel and channel_name.lower().replace("📢-","") == public_updates_channel.name.lower():
+                continue
+
+            base_name = ''.join(c for c in channel_name if c.isalnum()).lower()
+            found = None
+            for existing in existing_channels.values():
+                existing_base = ''.join(c for c in existing.name if c.isalnum()).lower()
+                if existing_base == base_name:
+                    found = existing
+                    break
+
+            # Prepare overwrites for private channels
+            overwrites = {}
+
+            # For private channels (except verify)
+            if category_name != "🛈 Info" and channel_name != "🔒-verify":
+                # Block everyone from accessing the channel by default
+                overwrites[guild.default_role] = discord.PermissionOverwrite(view_channel=False)
+
+                # Allow the Member role to view the channel
+                member_role = discord.utils.get(guild.roles, name="👥 Members")
+                if member_role:
+                    overwrites[member_role] = discord.PermissionOverwrite(view_channel=True)
+
+                # Allow Staff roles to view the channel
+                staff_roles = [
+                    "👑 Owner", "🔥 Co-Owner", "⚡ Head Administrator", "🛡️ Admin", "👑 Head Moderator", "🧰 Moderator"
+                ]
+                for role_name_staff in staff_roles:
+                    role = discord.utils.get(guild.roles, name=role_name_staff)
+                    if role:
+                        overwrites[role] = discord.PermissionOverwrite(view_channel=True)
+
+            # Create or rename the channel
+            if found:
+                if found.category != category:
+                    await found.edit(category=category)  # Move the channel
+                await found.edit(name=channel_name, overwrites=overwrites)
+            else:
+                if category_name == "🔊 Voice Channels":
+                    await guild.create_voice_channel(channel_name, category=category, overwrites=overwrites)
+                else:
+                    await guild.create_text_channel(channel_name, category=category, overwrites=overwrites)
+
+    await interaction.followup.send("Server setup complete! ✅", ephemeral=True)
+
+                  bot.run("BOTTOKEN")
