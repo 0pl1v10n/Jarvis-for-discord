@@ -304,22 +304,6 @@ Future releases may introduce significant architectural changes. Backward compat
 
 ---
 
-## Roadmap
-
-Jarvis is intended to be a long-term project, with future releases expanding on the concepts established by earlier versions.
-
-| Version | Progress |
-|---|---|
-| v1 | Completed |
-| v2 | Will be released soon |
-| v3 | Planned |
-| v4 | Planned |
-| v5 | Planned |
-
-Specific features and release timelines will be documented as development progresses.
-
----
-
 ## Author
 
 Jarvis is an independently developed project focused on bringing AI-powered assistance and automation to Discord communities.
