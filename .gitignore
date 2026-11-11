@@ -1,1 +1,15 @@
-*.env
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.log
+token.txt
+serverID.txt
+.DS_Store

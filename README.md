@@ -1,313 +1,489 @@
-# Jarvis
+# Jarvis v2 🤵
 
-**An AI-powered Discord assistant designed to manage, automate, and interact with Discord servers through natural language.**
+A Gemini-first Discord bot that runs your whole server through natural language.
+Instead of a fixed command menu, Jarvis exposes a large registry of audited
+actions (moderation, channels, roles, messages, community features, voice,
+games, and more) to an AI agent. You talk; it plans and executes — with
+permission checks, confirmations, and approvals around anything destructive.
 
-Jarvis is a butler-style Discord bot that allows users to communicate with their server through ordinary conversation rather than relying on traditional command interfaces.
+Jarvis is a from-scratch rewrite of the v1 bot. v1 inspired the tone; none of
+its command structure is required to use v2.
 
-Powered by AI, Jarvis interprets user requests, selects from a registry of predefined actions, and executes them through Discord's API. From moderation and server management to community automation and interactive games, Jarvis aims to make Discord administration more accessible and intuitive.
-
-Instead of remembering commands, you simply ask.
-
-```text
-"Hey Jarvis, ban user2. He's been spamming."
-
-"Jarvis, give the Helper role to everyone who reacted to the rules message."
-
-"Jarvis, lock #general and tell everyone why."
-
-"Jarvis, start a game of blackjack."
+```
+"hey jarvis, lock #general and tell everyone why"
+"jarvis, give the Helper role to everyone who reacted to the rules message"
+"oi jarvis, start a blackjack game"
+"jarvis, remute the guy who keeps spamming and log it"
 ```
 
-Jarvis handles the interpretation, validation, permissions, and execution.
+---
+
+## Highlights
+
+- **Gemini-first, never Gemini-only.** Automatic failover across every
+  configured provider and model. When a model is rate-limited, missing, or
+  hanging, Jarvis transparently switches to the next one — even a different
+  provider.
+- **25 tool groups / 246 actions.** One coherent action registry with per-action
+  risk levels, Discord permission checks, confirmation prompts, moderator
+  approval, and audit logging.
+- **1,379 wake phrases.** Built from greetings, names, titles, and suffixes, plus
+  mentions, replies, and special phrases.
+- **14 minigames**, all interactive in-channel: Rock Paper Scissors, Coin Flip,
+  Magic 8-Ball, Dice, Slots, Trivia, Hangman, Wordle, Tic-Tac-Toe, Connect Four,
+  Blackjack, Higher or Lower, Memory, and a Reaction Test.
+- **Persistent community systems**: welcome/goodbye, autorole, autoresponses,
+  logging, leveling, reaction roles, starboard, temp voice, reminders,
+  giveaways, scheduled unbans, and stat counters.
+- **Discord channel storage** for warnings, notes, config, reminders, giveaways,
+  tickets, levels, economy, reaction roles, scheduled actions, game stats,
+  starboard, and audit history. Jarvis creates a private category and one
+  channel per data domain, uploads JSON snapshots, and deletes the previous
+  snapshot only after the new one is safely stored.
+- **Slash commands are optional shortcuts**, not the interface: `/ask`, `/help`,
+  `/status`, `/ping`, `/game`, `/model`, `/phrases`.
 
 ---
 
-## Overview
+## Requirements
 
-Jarvis is built around a few core principles:
+- Python **3.10+**
+- `ffmpeg` on `PATH` for music/voice playback (optional, but recommended)
+- A Discord application with a bot token
+- At least one AI provider key (Gemini recommended)
 
-- **Natural-language interaction:** Communicate with Jarvis using ordinary language.
-- **AI-driven execution:** An AI agent interprets requests and selects the appropriate actions.
-- **Structured architecture:** Capabilities are organised into reusable tool groups and registered actions.
-- **Permission enforcement:** Every action is validated against predefined security policies and Discord permissions.
-- **Controlled execution:** Destructive and privileged operations are protected by confirmations and approval workflows.
-- **Extensibility:** New functionality can be introduced without rebuilding the entire AI integration.
-
-Jarvis is an evolving project. Each major release introduces improvements to its architecture, capabilities, and overall functionality.
-
----
-
-## Versions
-
-Jarvis is developed through major releases. Each version represents a significant stage in the project's development.
-
-| Version | Status | Description |
-|---|---|---|
-| v1 | Released | Original Gemini-powered conversational Discord bot. |
-| v2 | Will be released soon | Complete rewrite featuring a modular architecture, multiple AI providers, 246 actions, and persistent community systems. |
-| v3 | Planned | Future development. |
-| v4 | Planned | Future development. |
-| v5 | Planned | Future development. |
-
-### v1 — Original Implementation
-
-The first version of Jarvis introduced the concept of managing a Discord server entirely through natural language.
-
-Rather than exposing traditional slash commands, v1 used Google Gemini as its primary interface. The AI interpreted requests and selected from approximately 27 predefined functions implemented in Python.
-
-**Key features:**
-
-- Conversational butler-style AI.
-- Moderation and member management.
-- Role and channel management.
-- Fuzzy name matching for members, roles, and channels.
-- Webhook-based impersonation.
-- Interactive minigames.
-- Server setup automation.
-- Permission checks and approval workflows.
-- Automatic Gemini model failover.
-- Optional media re-embedding functionality.
-
-v1 established the foundation for the project and demonstrated how AI could serve as a natural-language interface for Discord administration.
-
-### v2 — Complete Rewrite
-
-v2 is a complete rewrite of the original implementation.
-
-While v1 established the concept, v2 introduced a substantially more extensive architecture, expanding Jarvis into a general-purpose Discord management and automation system.
-
-**Key features:**
-
-- 25 tool groups containing 246 registered actions.
-- 1,379 generated wake phrases.
-- Multiple AI provider integrations.
-- Automatic cross-provider model failover.
-- 14 interactive minigames.
-- Persistent community management systems.
-- Discord channel-backed data storage.
-- Moderation, tickets, leveling, and economy systems.
-- Reaction roles, starboard, giveaways, and reminders.
-- Temporary voice channels.
-- Optional slash commands.
-- Centralised permission enforcement and audit logging.
-
-Unlike v1, v2 is not exclusively dependent on Google Gemini. Multiple providers can be configured, with Gemini remaining the recommended starting point.
-
----
-
-## Architecture
-
-Jarvis separates AI interpretation from action execution.
-
-The AI agent is responsible for understanding user intent and selecting appropriate actions. The actual execution is handled by predefined Python implementations.
-
-The general execution process is:
-
-1. **Message intake:** Jarvis receives a message through Discord.
-2. **Intent interpretation:** The message and relevant conversation context are passed to the configured AI provider.
-3. **Action selection:** The AI determines whether a conversational response or registered action is appropriate.
-4. **Validation:** Jarvis validates arguments, permissions, risk levels, and execution requirements.
-5. **Approval:** If necessary, Jarvis requests confirmation or approval from an authorised user.
-6. **Execution:** The validated action is executed through the appropriate Discord API operation.
-7. **Response:** Jarvis reports the result back to the conversation.
-
-The AI does not independently enforce permissions or execute arbitrary administrative operations.
-
-All actions pass through the application's execution layer.
-
-### Core Components
-
-| Component | Responsibility |
-|---|---|
-| AI Agent | Interprets requests and selects registered actions. |
-| Provider Router | Handles provider selection, model health, and automatic failover. |
-| Action Registry | Defines available actions, schemas, and tool groups. |
-| Action Runner | Validates and executes registered actions. |
-| Permission System | Enforces permission requirements and risk policies. |
-| Confirmation System | Handles confirmations and approval workflows. |
-| Data Storage | Manages persistent application and server data. |
-| Features | Handles automated events and background tasks. |
-| Minigames | Provides interactive games through Discord components. |
-
-The architecture is intended to make new functionality easier to introduce without duplicating the underlying AI integration.
-
----
-
-## Security and Permissions
-
-Security is an important part of Jarvis's design.
-
-AI-generated requests are never treated as automatically authorised operations. Every action is subject to application-level validation before execution.
-
-Depending on the action and its risk level, execution may require:
-
-| Risk Level | Authorisation |
-|---|---|
-| Safe | Available to everyone. |
-| Low | Member-level access. |
-| Moderate | Moderator permissions. |
-| High | Administrator permissions. |
-| Critical | Server owner permissions. |
-
-Additional safeguards include:
-
-- Explicit confirmation for destructive operations.
-- Moderator and administrator approval workflows.
-- Discord permission validation.
-- Role hierarchy enforcement.
-- Action audit logging.
-- Protection against unauthorised privilege escalation.
-
-Jarvis cannot grant itself permissions or execute operations beyond the permissions available to its Discord bot account.
-
----
-
-## AI Provider Support
-
-Jarvis v2 supports multiple AI providers, allowing users to configure their preferred models and fallback options.
-
-Supported providers include:
-
-| Provider | Configuration |
-|---|---|
-| Google Gemini | `GEMINI_API_KEY` |
-| OpenRouter | `OPENROUTER_API_KEY` |
-| Groq | `GROQ_API_KEY` |
-| OpenAI | `OPENAI_API_KEY` |
-| Anthropic | `ANTHROPIC_API_KEY` |
-| Mistral | `MISTRAL_API_KEY` |
-| DeepSeek | `DEEPSEEK_API_KEY` |
-| Together AI | `TOGETHER_API_KEY` |
-| xAI | `XAI_API_KEY` |
-| Ollama | `OLLAMA_ENABLED` |
-| LM Studio | `LMSTUDIO_ENABLED` |
-| Custom providers | Custom configuration |
-
-Provider availability depends on the corresponding configuration and credentials.
-
-### Automatic Failover
-
-Jarvis can automatically switch between configured models and providers when failures occur.
-
-Examples include:
-
-- Rate limits and quota exhaustion.
-- Unavailable or retired models.
-- Server-side errors.
-- Network failures.
-- Request timeouts.
-- Invalid provider credentials.
-
-The router tracks provider health and applies cooldowns to problematic models, allowing other configured providers to handle subsequent requests.
-
----
-
-## Installation
-
-Installation requirements and procedures vary between major versions.
-
-### Requirements
-
-Generally, Jarvis requires:
-
-- Python 3.10 or newer.
-- A Discord application with a configured bot user.
-- Appropriate Discord gateway intents and permissions.
-- At least one supported AI provider and its API credentials.
-
-Additional dependencies may be required for optional functionality, such as voice playback.
-
-### Clone the Repository
-
-```bash
-git clone <YOUR_REPOSITORY_URL>
-cd <REPOSITORY_DIRECTORY>
-```
-
-### Jarvis v1
-
-```bash
-cd v1
-
-pip install discord.py google-genai python-dotenv aiohttp
-
-python bot.py
-```
-
-### Jarvis v2
+Install dependencies:
 
 ```bash
 cd v2
-
 python -m venv .venv
-
 source .venv/bin/activate
-
 pip install -r requirements.txt
-
-python run.py
 ```
 
-On Windows, activate the virtual environment using:
+Optional voice/music extras:
 
-```powershell
-.venv\Scripts\activate
+```bash
+pip install PyNaCl yt-dlp
+# and install ffmpeg with your package manager
 ```
 
-For complete installation and configuration instructions, refer to the README associated with the version you intend to run.
+---
+
+## Discord setup
+
+1. Create an application at <https://discord.com/developers/applications>.
+2. **Bot → Privileged Gateway Intents**: enable **Message Content** and
+   **Server Members**. Enable **Presence** only if you set
+   `ENABLE_PRESENCES=true`.
+3. Invite the bot with the `bot` and `applications.commands` scopes. Grant
+   `Administrator` for the full feature set, or the specific permissions you
+   want it to use.
+4. Put Jarvis's role above any roles it must manage.
 
 ---
 
 ## Configuration
 
-Jarvis uses environment variables and configuration files to manage Discord credentials, AI providers, and optional functionality.
+Copy the template and edit it:
 
-A typical v2 configuration looks like this:
-
-```dotenv
-DISCORD_TOKEN=your-discord-bot-token
-GUILD_ID=your-discord-server-id
-
-GEMINI_API_KEY=your-gemini-api-key
-
-LOG_CHANNEL_ID=
-APPROVAL_CHANNEL_ID=
-MOD_ROLE_ID=
-ADMIN_ROLE_ID=
+```bash
+cp .env.example .env
+$EDITOR .env
 ```
 
-The available configuration options vary between versions.
+Real environment variables always win. Jarvis also loads `.env` from the
+project root and the legacy `v1/ai/gemini/.env`; the token can come from
+`v2/token.txt` or `v1/token.txt`, and `GUILD_ID` from `serverID.txt`.
 
-Refer to the individual version's documentation for the complete configuration reference.
+### Minimum
 
-**Never commit API keys, Discord bot tokens, or other sensitive credentials to version control.**
+```dotenv
+DISCORD_TOKEN=...          # or token.txt
+GUILD_ID=...               # optional guild-scoped command sync
+GEMINI_API_KEY=...         # or inherit from the environment / v1 config
+```
+
+### Recommended Gemini settings
+
+```dotenv
+GEMINI_MODELS=gemini-3.5-flash,gemini-3.5-flash-lite
+GEMINI_AUTO_DISCOVER=true
+AI_REQUEST_TIMEOUT=45
+```
+
+Older model IDs such as `gemini-2.5-flash` may be retired or return 404. The
+router automatically cools down bad models and keeps moving through the chain;
+auto-discovery appends newly available Gemini models as extra failover capacity.
+`GEMINI_MODEL` (singular) is still accepted as a legacy alias for one model.
+
+### Models that balance latency and cost
+
+- Gemini flash/lite models accept `thinkingBudget=0` (or no special config for
+  lite), which keeps responses fast. Jarvis sends the right field per model.
+- Pro/Gemma models do not accept `thinkingBudget`; Jarvis leaves them alone.
+- Models that spend their entire budget on hidden reasoning and return an empty
+  `MAX_TOKENS` response are treated as failed so another model can answer.
+
+### Selecting providers
+
+Any provider with a key is enabled automatically. Precedence is controlled by
+`AI_PROVIDER_ORDER`; the full model order can be pinned with `AI_MODEL_CHAIN`.
+
+```dotenv
+AI_PROVIDER_ORDER=gemini,openrouter,groq,openai,anthropic,mistral,deepseek,together,xai,ollama,lmstudio
+# Explicit chain (provider:model, comma separated):
+# AI_MODEL_CHAIN=gemini:gemini-3.5-flash,openrouter:google/gemini-2.5-flash,ollama:llama3.2
+```
+
+Supported provider presets:
+
+| Provider | Kind | Key variable |
+| --- | --- | --- |
+| Gemini | `gemini` | `GEMINI_API_KEY` |
+| OpenRouter | OpenAI-compatible | `OPENROUTER_API_KEY` |
+| Groq | OpenAI-compatible | `GROQ_API_KEY` |
+| OpenAI | OpenAI-compatible | `OPENAI_API_KEY` |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` |
+| Mistral | OpenAI-compatible | `MISTRAL_API_KEY` |
+| DeepSeek | OpenAI-compatible | `DEEPSEEK_API_KEY` |
+| Together | OpenAI-compatible | `TOGETHER_API_KEY` |
+| xAI | OpenAI-compatible | `XAI_API_KEY` |
+| Ollama | OpenAI-compatible | `OLLAMA_ENABLED=true` |
+| LM Studio | OpenAI-compatible | `LMSTUDIO_ENABLED=true` |
+| Custom / extra | OpenAI-compatible or Anthropic | `CUSTOM_*` or `PROVIDERS_JSON` |
+
+Custom endpoint:
+
+```dotenv
+CUSTOM_NAME=nvidia
+CUSTOM_BASE_URL=https://integrate.api.nvidia.com/v1
+CUSTOM_API_KEY=...
+CUSTOM_MODELS=meta/llama-3.1-70b-instruct
+```
+
+Multiple extra providers:
+
+```dotenv
+PROVIDERS_JSON=[{"name":"nvidia","kind":"openai","base_url":"https://integrate.api.nvidia.com/v1","api_key":"...","models":["meta/llama-3.1-70b-instruct"]}]
+```
+
+### Failover behaviour
+
+- Healthy model is remembered and reused.
+- 429/quota → 15-minute cooldown for that model, then the next model/provider.
+- 404/unknown model → 6-hour cooldown.
+- 5xx/network/timeout → progressive cooldown (max 10 minutes).
+- Invalid key/permission → provider disabled for 24 hours; others continue.
+- Total failure does **not** shut the bot down by default; it reports the
+  failure, retries on the next message, and recovers automatically.
+- `/status` shows the chain, the current model, cooldowns, and last errors.
+- `/model <provider> <model>` pins a model for managers/owners.
 
 ---
 
-## Development
+## Waking Jarvis
 
-Jarvis is an actively evolving project.
+Call it however feels natural. Examples:
 
-Development focuses on improving its architecture, expanding its capabilities, and making the system more reliable and extensible.
+```
+jarvis
+hey jarvis
+oi jarvis
+hello there jarvis
+mr jarvis
+jarvis, please
+good morning jarvis
+wake up jarvis
+```
 
-Areas of development include:
+Jarvis also responds to:
 
-- Expanding the action registry.
-- Improving AI interpretation and execution reliability.
-- Supporting additional AI providers.
-- Improving permission enforcement and security.
-- Introducing additional Discord integrations.
-- Expanding community management and automation.
-- Improving modularity and maintainability.
+- an `@mention`
+- a reply to one of its messages
+- any of **1,379** generated phrases (`/phrases` lists a sample)
 
-Future releases may introduce significant architectural changes. Backward compatibility between major versions is not guaranteed.
+A wake phrase starts a short conversational session. Once engaged, follow-ups can
+omit the name until `JARVIS_SESSION_SECONDS` expires. Set
+`AUTO_ACTION_WITHOUT_WAKE=false` if you want actions to require an explicit wake
+word or mention every time.
 
 ---
 
-## Author
+## Minigames
 
-Jarvis is an independently developed project focused on bringing AI-powered assistance and automation to Discord communities.
+Start with `/game` (blank for random) or just ask:
 
-**Built with Python, Discord, and AI.**
+```
+jarvis, play wordle
+jarvis, blackjack
+jarvis, start a reaction test
+```
 
-*Jarvis is an evolving project. Each release represents another step towards a more capable and extensible Discord assistant.*
+| Game | Key |
+| --- | --- |
+| 🪨 Rock Paper Scissors | `rps` |
+| 🪙 Coin Flip | `coinflip` |
+| 🎱 Magic 8-Ball | `8ball` |
+| 🎲 Dice | `dice` |
+| 🎰 Slots | `slots` |
+| ❓ Trivia | `trivia` |
+| 🪢 Hangman | `hangman` |
+| 🟩 Wordle | `wordle` |
+| ⭕ Tic-Tac-Toe | `tictactoe` |
+| 🔴 Connect Four | `connect4` |
+| 🃏 Blackjack | `blackjack` |
+| ⬆️ Higher or Lower | `higherlower` |
+| 🧠 Memory | `memory` |
+| ⚡ Reaction Test | `reaction` |
+
+Games use Discord UI buttons and menus, work in channels or private game
+channels, and time out after `GAME_IDLE_TIMEOUT` seconds.
+
+---
+
+## What Jarvis can do
+
+The natural-language agent can call any of these tool groups
+
+| Group | Capabilities |
+| --- | --- |
+| `manage_member` | info, warn/notes, timeout, kick, ban, softban, tempban, unban, nickname, role add/remove, DM, voice mute/deafen/move |
+| `manage_channel` | create/delete/rename/move/clone, lock/unlock, slowmode, topic, NSFW, bitrate, permission overwrites, sync |
+| `manage_category` | create/delete/rename categories and reorder them |
+| `manage_thread` | create, delete, rename, lock, archive, add/remove members |
+| `manage_roles` | list/info/members, create, delete, rename, colour, hoist, mentionable, permissions, position |
+| `manage_server` | server info/settings, icon/banner/splash, verification, AFK, system/rules/updates channels, notifications, locale, widget |
+| `manage_invites` | create/list/delete invites |
+| `manage_webhooks` | create/edit/delete webhooks and send messages through them |
+| `manage_expressions` | emoji/sticker creation, rename, delete |
+| `manage_events` | scheduled events |
+| `manage_automod` | automod rules and keyword filters |
+| `manage_message` | send, reply, edit, delete, purge, pin, react, embed, poll, download |
+| `bulk_message` | clear reactions, delete a user's recent messages, forward messages |
+| `manage_community` | welcome/goodbye, logging, autoroles, autoresponses, reaction roles, starboard, counters, temp voice |
+| `manage_tickets` | panels, open/claim/close/add/remove/transcript |
+| `manage_leveling` | rank, leaderboard, XP config, reset, role rewards |
+| `manage_economy` | balance, daily, work, pay, gamble, leaderboard, admin set/add/reset |
+| `manage_giveaway` | create, end, reroll, cancel, entries |
+| `manage_reminder` | create, list, cancel, clear |
+| `manage_voice` | join/leave, play/search/queue, skip/stop/pause, volume, loop, shuffle |
+| `play_game` | launch any minigame and record results |
+| `game_stats` | per-user stats and leaderboards |
+| `get_info` | members, channels, roles, server, avatar/banner, emojis, boosters, bans, invites, audit log, permissions, messages |
+| `utility` | ping, uptime, time, math, encoding, passwords, UUIDs, weather, define, search, translate, summarize, rewrite, explain |
+
+---
+
+## Permissions, confirmations, and audit
+
+Every action declares a risk level:
+
+| Risk | Who can run it without approval |
+| --- | --- |
+| 🟢 Safe | everyone |
+| 🔵 Low | a member |
+| 🟡 Moderate | a moderator |
+| 🟠 High | an administrator |
+| 🔴 Critical | the server owner |
+
+- The requester must have the matching Discord permission (or be owner/admin).
+- Destructive actions ask for an explicit confirmation first (buttons or a plain
+  “yes”).
+- If the requester lacks permission, a qualified moderator/administrator can
+  approve the request instead of executing it immediately.
+- Every action is written to the audit table. If `LOG_CHANNEL_ID` is set, a
+  human-readable copy is posted there too.
+- Jarvis never grants itself permissions or acts outside its own Discord role
+  hierarchy.
+
+Useful optional IDs:
+
+```dotenv
+LOG_CHANNEL_ID=...
+APPROVAL_CHANNEL_ID=...
+MOD_ROLE_ID=...
+ADMIN_ROLE_ID=...
+GAME_CATEGORY_ID=...
+OWNER_IDS=...
+```
+
+---
+
+## Slash commands
+
+| Command | Purpose |
+| --- | --- |
+| `/ask <prompt>` | Talk to the agent directly. |
+| `/help` | List tool groups, games, and commands. |
+| `/status` | Uptime, latency, model chain, cooldowns. |
+| `/ping` | Gateway and round-trip latency. |
+| `/game [game]` | Start a minigame. |
+| `/model [provider] [model]` | Show health or pin a model. |
+| `/phrases` | Show wake-phrase examples and games. |
+
+Guild commands sync on startup. Set `GUILD_ID` for instant sync in one server;
+leave it blank for global sync (which Discord can take a while to propagate).
+
+---
+
+## Running
+
+```bash
+cd v2
+python run.py
+```
+
+or:
+
+```bash
+python -m jarvis
+```
+
+Logs go to stdout. `LOG_LEVEL=DEBUG` adds provider and router detail. No local
+database is created: data is stored in a private Discord category named
+`Jarvis Data` (configurable with `JARVIS_DATA_CATEGORY`). If an old
+`DATABASE_PATH` SQLite file exists, it is read once on first startup to migrate
+existing data into channels and then never written again.
+
+Keep it running with systemd, Docker, or your process manager of choice. Example
+systemd unit:
+
+```ini
+[Unit]
+Description=Jarvis v2 Discord bot
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/laurence/Projects/Jarvis/v2
+ExecStart=/home/laurence/Projects/Jarvis/v2/.venv/bin/python run.py
+Restart=always
+RestartSec=5
+EnvironmentFile=/home/laurence/Projects/Jarvis/v2/.env
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+## Data storage (Discord channels)
+
+Jarvis does not keep a local database. It creates a private category in each
+server and lazily creates one text channel per data domain the first time that
+domain is used:
+
+| Channel | Holds |
+| --- | --- |
+| `#jarvis-levels` | XP, message counts, and last-XP timestamps |
+| `#jarvis-economy` | balances, daily/work cooldowns |
+| `#jarvis-warnings` / `#jarvis-notes` | moderation records |
+| `#jarvis-config` | welcome/logging/leveling/ticket/starboard settings |
+| `#jarvis-autoresponses` | trigger/reply rules |
+| `#jarvis-reaction-roles` | reaction-role mappings |
+| `#jarvis-reminders` | personal reminders |
+| `#jarvis-giveaways` / `#jarvis-giveaway-entries` | giveaways and entries |
+| `#jarvis-tickets` | ticket state |
+| `#jarvis-scheduled-actions` | timed unbans and similar jobs |
+| `#jarvis-game-stats` | minigame records |
+| `#jarvis-audit` | action audit history |
+| `#jarvis-starboard` | starboard message mappings |
+
+The newest message in each channel is a JSON snapshot attachment. The update
+sequence is deliberately crash-safe:
+
+1. Jarvis updates the in-memory record (for example a user's XP/level).
+2. It uploads a complete new snapshot of that domain to the matching channel.
+3. Only after the upload succeeds does it delete the previous snapshot.
+
+So if Discord is unavailable mid-update, the old snapshot is still there. On
+startup Jarvis reads the snapshots back into memory, which is what the AI-facing
+actions query. The AI never manages channels itself: it calls the normal
+`manage_leveling`, `manage_economy`, etc. actions, and the hard-coded store does
+the lookup and persistence.
+
+Useful storage settings:
+
+```dotenv
+JARVIS_DATA_CATEGORY=Jarvis Data
+JARVIS_DATA_FLUSH_SECONDS=2
+```
+
+`JARVIS_DATA_FLUSH_SECONDS` coalesces bursts (for example XP from a busy chat)
+into one snapshot upload. Ask Jarvis to `manage_storage status` to see the
+channels and record counts, `setup` to create every channel, or `refresh` to
+re-read them from Discord. The category denies `@everyone` by default; Jarvis's
+own role is granted access.
+
+---
+
+## Architecture
+
+```
+v2/
+├── run.py                    # entry point
+├── jarvis/
+│   ├── bot.py                # client lifecycle, message intake, audit
+│   ├── config.py             # env, provider presets, legacy secret lookup
+│   ├── triggers.py           # wake-phrase generation and matching
+│   ├── memory.py             # per-channel conversation memory
+│   ├── context.py            # ActionContext shared by chat + slash
+│   ├── permissions.py        # risk → permission policy
+│   ├── confirmations.py      # confirm / approve buttons and chat replies
+│   ├── runner.py             # validates and executes registered actions
+│   ├── database.py           # Discord channel-backed data store
+│   ├── slash.py              # optional slash commands
+│   ├── ai/
+│   │   ├── agent.py          # tool-calling loop
+│   │   ├── router.py         # model discovery, health, failover
+│   │   ├── prompt.py         # system prompt
+│   │   ├── tools.py          # action schemas / registry
+│   │   └── providers/        # gemini, openai-compatible, anthropic
+│   ├── actions/              # member, structure, messages, server, …
+│   ├── minigames/            # registry + 14 interactive games
+│   └── features/             # passive event features and periodic jobs
+└── requirements.txt
+```
+
+### Design notes
+
+- **Natural language is the interface.** Slash commands are thin wrappers around
+  the same `ActionContext`; new capabilities only need to be registered once.
+- **Providers are raw REST adapters** (no vendor SDKs), so adding a provider is a
+  small config entry or one class.
+- **Failover is per request.** The router holds a lock around generation so two
+  requests cannot race the current-model pointer, while health state persists
+  across requests.
+- **State lives in Discord channels**, so giveaways, tickets, reminders,
+  reaction roles, and persistent views survive restarts. The in-memory index is
+  hydrated from the channels on startup; writes are coalesced and uploaded as
+  JSON snapshots by a background flusher.
+- **Persistent views use stable custom IDs** (`jarvis:ticket:*`,
+  `jarvis:giveaway:<id>:enter`) and are re-registered on startup.
+
+---
+
+## Troubleshooting
+
+| Symptom | Fix |
+| --- | --- |
+| `No Discord token found` | Set `DISCORD_TOKEN` or create `v2/token.txt`. |
+| `No AI provider configured` | Set `GEMINI_API_KEY` or another provider key. |
+| Bot ignores messages | Enable **Message Content** intent; use a wake phrase or mention. |
+| `PrivilegedIntentsRequired` | Enable **Server Members** intent (and Presence if enabled). |
+| Commands missing | Set `GUILD_ID` and restart; allow time for global sync. |
+| A model always times out | It is cooled down automatically; check `/status`. Pin a known-good model with `/model`. |
+| `404 model not found` | The model ID was retired; remove it from `GEMINI_MODELS`. |
+| Voice won't play | Install `ffmpeg`, `PyNaCl`, and optionally `yt-dlp`. |
+| Empty replies | Router treats empty `MAX_TOKENS` responses as failures and tries the next model. |
+| Downloads/uploads fail | Large assets may exceed Discord limits; Jarvis reports the error rather than silently failing. |
+| Data-store channels missing | Give Jarvis **Manage Channels**, **Manage Messages**, and **Attach Files**, or ask it to run `manage_storage setup`. |
+| Old levels/economy disappeared | Keep `jarvis.db` beside the bot for the first start so it can migrate; after migration the file is no longer used. |
+
+---
+
+## License / usage
+
+Private project. Use it on servers you administer. Never commit `.env`,
+`token.txt`, or API keys — `.gitignore` already excludes them.
