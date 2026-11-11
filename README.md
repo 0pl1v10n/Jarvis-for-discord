@@ -44,7 +44,7 @@ Jarvis is developed through major releases. Each version represents a significan
 | Version | Status | Description |
 |---|---|---|
 | v1 | Released | Original Gemini-powered conversational Discord bot. |
-| v2 | Released | Complete rewrite featuring a modular architecture, multiple AI providers, 246 actions, and persistent community systems. |
+| v2 | Will be released soon | Complete rewrite featuring a modular architecture, multiple AI providers, 246 actions, and persistent community systems. |
 | v3 | Planned | Future development. |
 | v4 | Planned | Future development. |
 | v5 | Planned | Future development. |
